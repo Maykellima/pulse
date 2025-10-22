@@ -7,8 +7,13 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 from supabase_client import get_supabase_manager, init_supabase
 
+# Limpiar variables de entorno previas para forzar recarga
+for key in list(os.environ.keys()):
+    if key.startswith(('SLACK_', 'ANTHROPIC_', 'SUPABASE_', 'PROJECT_', 'ENVIRONMENT', 'LOG_LEVEL')):
+        del os.environ[key]
+
 # Cargar variables de entorno
-load_dotenv()
+load_dotenv(override=True)
 
 # Configuración
 SLACK_TOKEN = os.getenv('SLACK_BOT_TOKEN')
