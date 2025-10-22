@@ -1,0 +1,41 @@
+name: Generate Pulse Report
+
+on:
+  # Solo ejecución manual desde GitHub UI
+  workflow_dispatch:
+
+jobs:
+  run-pulse-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Pulse Agent
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          PROJECT_CHANNEL_ID: ${{ secrets.PROJECT_CHANNEL_ID }}
+          PROJECT_LEAD_USER_ID: ${{ secrets.PROJECT_LEAD_USER_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ENVIRONMENT: production
+          LOG_LEVEL: INFO
+        run: |
+          python agent_main.py
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Pulse Agent execution failed. Check logs for details."

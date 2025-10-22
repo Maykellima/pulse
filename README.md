@@ -93,16 +93,43 @@ python3 migrate_to_supabase.py
 ```
 
 ### Ejecutar el sistema
-```bash
-# Sistema tradicional
-python3 main.py
 
+#### Ejecución Local
+```bash
 # Sistema agéntico (recomendado)
 python3 agent_main.py
 
+# Sistema tradicional
+python3 main.py
+
 # Pruebas
 python3 test_agent.py
+python3 test_connections.py
 ```
+
+#### Ejecución desde GitHub Actions (Manual)
+
+El sistema incluye un workflow para ejecutar reportes bajo demanda desde GitHub.
+
+**Configurar Secrets (solo una vez):**
+
+1. Ve a tu repositorio: `Settings → Secrets and variables → Actions`
+2. Agrega estos secrets:
+   - `SLACK_BOT_TOKEN`
+   - `PROJECT_CHANNEL_ID`
+   - `PROJECT_LEAD_USER_ID`
+   - `ANTHROPIC_API_KEY`
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+
+**Ejecutar manualmente:**
+
+1. Ve a tu repositorio en GitHub
+2. Click en **Actions** (pestaña superior)
+3. Selecciona **"Generate Pulse Report"**
+4. Click en **"Run workflow"** (botón azul a la derecha)
+5. Confirma con **"Run workflow"**
+6. Espera ~30 segundos y revisa tu DM en Slack
 
 ## 📊 Estructura de la Base de Datos
 
