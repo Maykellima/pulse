@@ -4,13 +4,13 @@ Sistema autónomo de análisis de proyectos que monitorea Slack y genera reporte
 
 ## 🚀 Características
 
-- **Monitoreo automático** de canales de Slack
-- **Análisis agéntico** con Claude AI
-- **Base de datos en la nube** con Supabase PostgreSQL
-- **Reportes ejecutivos** automáticos
-- **Detección de bloqueos** y riesgos
+- **Análisis de últimos 7 días hábiles** de canales de Slack
+- **Análisis agéntico** con Claude AI y 5 herramientas especializadas
+- **Base de datos en la nube** con Supabase PostgreSQL (histórico incremental)
+- **Reportes ejecutivos** bajo demanda
+- **Detección de bloqueos** y riesgos actuales
 - **Análisis de sentimiento** del equipo
-- **Métricas de salud** del proyecto
+- **Métricas de salud** del proyecto de la semana actual
 
 ## 📋 Setup Inicial
 
@@ -180,6 +180,23 @@ El sistema agéntico (`agent_main.py`) utiliza Claude AI con herramientas especi
 - **Clasificación de urgencia** de tareas
 - **Cálculo de salud** del equipo
 - **Extracción de decisiones** importantes
+
+### 🔄 Flujo de Ejecución
+
+1. **Obtención de mensajes:** Obtiene últimos 7 días hábiles desde Slack API
+2. **Guardado incremental:** Almacena mensajes en Supabase (histórico)
+3. **Análisis agéntico:** Claude usa 5 herramientas especializadas
+4. **Generación de reporte:** Reporte ejecutivo con insights de la semana
+5. **Entrega:** Envío por DM en Slack al líder del proyecto
+
+### 📊 Supabase como Histórico
+
+Supabase **NO se usa para análisis**, solo como repositorio incremental:
+- ✅ Cada ejecución guarda mensajes nuevos
+- ✅ Acumula histórico de largo plazo
+- ✅ Permite análisis manual futuro vía SQL
+- ❌ NO se lee de Supabase para los reportes
+- ❌ NO se compara con histórico (sin baselines)
 
 ## 📈 Próximas Funcionalidades
 

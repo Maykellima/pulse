@@ -54,10 +54,12 @@ def get_user_name(user_id):
         return f"Usuario {user_id}"
 
 
-def calculate_business_days(days=10):
-    """Calcula timestamp del inicio de los últimos N días hábiles (solo lunes-viernes)"""
+def calculate_business_days(days=7):
+    """Calcula timestamp del inicio de los últimos N días hábiles INCLUYENDO HOY"""
     current_date = datetime.now()
-    business_days_count = 0
+
+    # Contar hoy si es día hábil
+    business_days_count = 1 if current_date.weekday() < 5 else 0
 
     while business_days_count < days:
         current_date -= timedelta(days=1)
@@ -71,25 +73,27 @@ def calculate_business_days(days=10):
 
 
 def get_channel_messages(hours=24):
-    """Obtiene mensajes del canal de los últimos 10 días hábiles"""
+    """Obtiene mensajes del canal de los últimos 7 días hábiles desde Slack API"""
     try:
-        # Primero intentar obtener de Supabase
-        supabase = get_supabase_manager()
-        db_messages = supabase.get_messages(CHANNEL_ID, days=10)
-        
-        if db_messages:
-            print(f"✅ Obtenidos {len(db_messages)} mensajes de Supabase (últimos 10 días hábiles)")
-            return db_messages
-        
-        # Si no hay mensajes en BD, obtener de Slack
-        oldest = calculate_business_days(days=10)
+        # SIEMPRE obtener de Slack API (fuente de verdad)
+        oldest = calculate_business_days(days=7)
         result = slack_client.conversations_history(
             channel=CHANNEL_ID,
             oldest=str(oldest)
         )
 
         messages = result['messages']
-        print(f"✅ Obtenidos {len(messages)} mensajes de Slack (últimos 10 días hábiles)")
+        print(f"✅ Obtenidos {len(messages)} mensajes de Slack (últimos 7 días hábiles)")
+
+        # Guardar mensajes en Supabase para histórico
+        if messages:
+            try:
+                supabase = get_supabase_manager()
+                saved_count = supabase.save_messages_batch(messages)
+                print(f"💾 Guardados {saved_count} mensajes nuevos en Supabase")
+            except Exception as e:
+                print(f"⚠️  Error guardando en Supabase: {e} (continuando con análisis)")
+
         return messages
 
     except SlackApiError as e:
@@ -735,7 +739,7 @@ def run_agentic_analysis(enriched_messages):
         message_context = "\n".join(conversations)
 
         # Prompt inicial para Claude
-        initial_prompt = f"""Eres un analista ejecutivo experto. Analiza la actividad del canal #{channel_name} de los últimos 10 días hábiles.
+        initial_prompt = f"""Eres un analista ejecutivo experto. Analiza la actividad del canal #{channel_name} de los últimos 7 días hábiles.
 
 DATOS DEL CANAL:
 ----------
@@ -916,7 +920,7 @@ def send_report_to_lead(report, enriched_messages):
         except:
             total_members = active_users
 
-        metrics_summary = f"""📊 *MÉTRICAS CLAVE (Últimos 10 días hábiles)*
+        metrics_summary = f"""📊 *MÉTRICAS CLAVE (Últimos 7 días hábiles)*
 ----------
 📨 Mensajes: {len(real_messages)}
 👥 Usuarios activos: {active_users} de {total_members}

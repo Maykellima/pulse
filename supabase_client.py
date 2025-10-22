@@ -39,13 +39,13 @@ class SupabaseManager:
             logger.error(f"❌ Error conectando a Supabase: {e}")
             raise
     
-    def save_message(self, message_id: str, user_id: str, text: str, timestamp: float, 
+    def save_message(self, message_id: str, user_id: str, text: str, timestamp: float,
                     thread_ts: str = None, reply_count: int = 0) -> bool:
         """Guarda un mensaje en la base de datos"""
         try:
             # Convertir timestamp a datetime
             message_datetime = datetime.fromtimestamp(timestamp)
-            
+
             data = {
                 "message_id": message_id,
                 "channel_id": os.getenv('PROJECT_CHANNEL_ID'),
@@ -53,11 +53,7 @@ class SupabaseManager:
                 "text": text,
                 "timestamp": message_datetime.isoformat(),
                 "thread_ts": thread_ts,
-                "reply_count": reply_count,
-                "message_type": "message",
-                "is_update": False,  # Se detectará después
-                "contains_decision": False,
-                "contains_blocker": False
+                "reply_count": reply_count
             }
             
             # Insertar usando upsert para evitar duplicados
@@ -81,7 +77,7 @@ class SupabaseManager:
             for msg in messages:
                 if 'user' in msg:  # Solo mensajes de usuarios reales
                     message_datetime = datetime.fromtimestamp(float(msg['ts']))
-                    
+
                     data = {
                         "message_id": msg['ts'],
                         "channel_id": os.getenv('PROJECT_CHANNEL_ID'),
@@ -89,11 +85,7 @@ class SupabaseManager:
                         "text": msg.get('text', ''),
                         "timestamp": message_datetime.isoformat(),
                         "thread_ts": msg.get('thread_ts'),
-                        "reply_count": msg.get('reply_count', 0),
-                        "message_type": "message",
-                        "is_update": False,
-                        "contains_decision": False,
-                        "contains_blocker": False
+                        "reply_count": msg.get('reply_count', 0)
                     }
                     batch_data.append(data)
             
